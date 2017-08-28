@@ -2,10 +2,8 @@ package com.kenzz.crazyapp.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.v4.os.EnvironmentCompat;
 
 import java.io.File;
 
