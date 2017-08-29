@@ -3,6 +3,7 @@ package com.kenzz.crazyapp;
 import android.app.Application;
 
 import com.kenzz.crazyapp.database.DataBaseSupportFactory;
+import com.kenzz.crazyapp.skin.SkinManager;
 import com.kenzz.crazyapp.utils.ExceptionHelper;
 
 /**
@@ -25,5 +26,6 @@ public class MyApplication extends Application {
         mInstance=this;
         ExceptionHelper.getExceptionHelper().init(this);
         DataBaseSupportFactory.getFactory().getDataBaseSupport().init(this);
+        SkinManager.getInstance().init(this);
     }
 }

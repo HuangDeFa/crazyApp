@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorAccent"
     tools:context="com.kenzz.crazyapp.MainActivity">
 
     <Button
@@ -13,6 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
+        android:textColor="@color/colorAccent"
       />
     <Button
         android:id="@+id/btn2"
@@ -20,6 +22,7 @@
         android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="hello world2"
+        android:text="换肤"
+        android:textColor="@color/colorAccent"
         />
 </RelativeLayout>

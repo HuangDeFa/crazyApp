@@ -3,6 +3,7 @@ package com.kenzz.crazyapp.skin.support;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import com.kenzz.crazyapp.skin.attr.SkinAttr;
 import com.kenzz.crazyapp.skin.attr.SkinType;
@@ -16,13 +17,15 @@ import java.util.List;
  */
 
 public class SkinSupport {
+private static final String TAG=SkinSupport.class.getSimpleName();
 
     public static List<SkinAttr> getSkinViewAttrs(Context context, AttributeSet attrs){
         List<SkinAttr> skinAttrs=new ArrayList<>();
         int attrCount=attrs.getAttributeCount();
         for(int index=0;index<attrCount;index++){
-           String name= attrs.getAttributeName(index);
+            String name= attrs.getAttributeName(index);
             SkinType skinType= getSkinTypeByName(name);
+            Log.d(TAG,"AttrName -->"+name);
             if(skinType!=null){
                 String value = attrs.getAttributeValue(index);
                 String resName = getResName(context,value);

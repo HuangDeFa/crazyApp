@@ -16,11 +16,11 @@ public class DataBaseSupport<T> implements IDataBaseSupport<T> {
 
     @Override
     public void init(Context context) {
-        SQLiteDatabase.openOrCreateDatabase(createDatabaseFile("joke"),null);
+      //  SQLiteDatabase.openOrCreateDatabase(createDatabaseFile("joke"),null);
     }
 
     private File createDatabaseFile(@NonNull String fileName){
-       if(Environment.getExternalStorageState()==Environment.MEDIA_MOUNTED){
+       if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
            File dirFile=new File(Environment.getExternalStorageDirectory(),"essayJoke");
            if(!dirFile.exists()){
                dirFile.mkdirs();

@@ -1,18 +1,19 @@
 package com.kenzz.crazyapp.activitys;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.LayoutInflaterCompat;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.app.AppCompatViewInflater;
 import android.support.v7.widget.VectorEnabledTintResources;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewParent;
 
+import com.kenzz.crazyapp.skin.SkinManager;
 import com.kenzz.crazyapp.skin.attr.SkinAttr;
 import com.kenzz.crazyapp.skin.attr.SkinView;
 import com.kenzz.crazyapp.skin.support.SkinAppCompatViewInflater;
@@ -20,10 +21,13 @@ import com.kenzz.crazyapp.skin.support.SkinSupport;
 
 import org.xmlpull.v1.XmlPullParser;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by huangdefa on 28/08/2017.
+ *
  */
 
 public abstract class SkinBaseActivity extends BaseActivity  implements LayoutInflater.Factory2{
@@ -49,7 +53,13 @@ public abstract class SkinBaseActivity extends BaseActivity  implements LayoutIn
     }
 
     private void manageSkinView(SkinView skinView) {
-
+        Map<Activity, List<SkinView>> mskinViews = SkinManager.getInstance().getMskinViews();
+        List<SkinView> skinViews = mskinViews.get(this);
+        if(skinViews==null){
+            skinViews=new ArrayList<>();
+            SkinManager.getInstance().putMskinViews(this,skinViews);
+        }
+        skinViews.add(skinView);
     }
 
     private View createView(View parent, String name, Context context, AttributeSet attrs) {
