@@ -8,7 +8,20 @@
     android:background="@color/colorAccent"
     tools:context="com.kenzz.crazyapp.MainActivity">
 
+    <com.kenzz.crazyapp.widget.QQRunView
+        android:visibility="gone"
+        android:id="@+id/myQQRun"
+        android:layout_marginTop="30dp"
+        android:layout_centerHorizontal="true"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        app:bgColor="@color/colorPrimary"
+        app:progressColor="@color/colorAccent"
+        app:runCount="2000"
+        />
+
     <Button
+        android:visibility="gone"
         android:layout_centerInParent="true"
         android:id="@+id/btn"
         android:layout_width="wrap_content"
@@ -17,6 +30,7 @@
         android:textColor="@color/colorAccent"
       />
     <Button
+        android:visibility="gone"
         android:id="@+id/btn2"
         android:layout_below="@id/btn"
         android:layout_centerHorizontal="true"
@@ -24,5 +38,59 @@
         android:layout_height="wrap_content"
         android:text="换肤"
         android:textColor="@color/colorAccent"
+        />
+    <com.kenzz.crazyapp.widget.TagLayout
+        android:id="@+id/tagLayout"
+        android:background="@color/colorAccent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="hubljoijoijououououooi"
+            android:textSize="15sp"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="hubljoijoijououououooi"
+            android:textSize="15sp"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="hubljoijoijououououooi"
+            android:textSize="15sp"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="hubljoijoijououououooi"
+            android:textSize="15sp"
+            />
+        <TextView
+            android:layout_marginTop="20dp"
+            android:paddingLeft="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="hubljoijoijououououooi"
+            android:textSize="15sp"
+            />
+    </com.kenzz.crazyapp.widget.TagLayout>
+    <com.kenzz.crazyapp.widget.HeightLightTextView
+        android:id="@+id/heightLightText"
+        android:layout_below="@id/tagLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World ! You are the best one"
+        android:textColor="@color/colorAccent"
+        android:padding="6dp"
+        android:textSize="20sp"
+        />
+    <com.kenzz.crazyapp.widget.CircleImageView
+        android:layout_below="@id/heightLightText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/meizi"
         />
 </RelativeLayout>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SuperListView">
+        <attr name="text" format="string|reference"/>
+        <attr name="src" format="reference"/>
+        <attr name="textSize" format="dimension"/>
+        <attr name="inputType">
+            <enum name="number" value="1"/>
+            <enum name="password" value="2"/>
+        </attr>
+    </declare-styleable>
+    <declare-styleable name="QQRunView">
+        <attr name="bgColor" format="color"/>
+        <attr name="progressColor" format="color"/>
+        <attr name="runCount" format="integer"/>
+    </declare-styleable>
+</resources>

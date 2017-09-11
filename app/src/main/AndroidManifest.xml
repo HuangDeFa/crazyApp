@@ -3,6 +3,7 @@
           package="com.kenzz.crazyapp">
  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -20,6 +21,12 @@
         </activity>
         <activity android:name=".SkinTestActivity">
         </activity>
+        <service android:name=".service.GuardService" android:process=":guardService"/>
+        <service android:name=".service.WorkService"/>
+        <service android:name=".service.JobWakeUpService"
+            android:enabled="true"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            />
     </application>
 
 </manifest>
