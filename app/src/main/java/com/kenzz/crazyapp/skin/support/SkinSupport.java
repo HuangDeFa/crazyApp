@@ -50,7 +50,9 @@ private static final String TAG=SkinSupport.class.getSimpleName();
         if(value.startsWith("@")){
             value=value.substring(1);
             int resId=Integer.parseInt(value);
-           return context.getResources().getResourceEntryName(resId);
+            if(resId>0) {
+                return context.getResources().getResourceEntryName(resId);
+            }
         }
         return null;
     }

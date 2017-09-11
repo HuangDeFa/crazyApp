@@ -25,4 +25,9 @@
         android:text="换肤"
         android:textColor="@color/colorAccent"
         />
+    <com.kenzz.crazyapp.widget.RadarView
+        android:layout_marginTop="30dp"
+        android:layout_centerHorizontal="true"
+        android:layout_width="150dp"
+        android:layout_height="150dp"/>
 </RelativeLayout>
