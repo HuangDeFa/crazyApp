@@ -21,7 +21,6 @@
         />
 
     <Button
-        android:visibility="gone"
         android:layout_centerInParent="true"
         android:id="@+id/btn"
         android:layout_width="wrap_content"
@@ -30,7 +29,6 @@
         android:textColor="@color/colorAccent"
       />
     <Button
-        android:visibility="gone"
         android:id="@+id/btn2"
         android:layout_below="@id/btn"
         android:layout_centerHorizontal="true"
@@ -93,4 +91,9 @@
         android:layout_height="wrap_content"
         android:src="@mipmap/meizi"
         />
+    <com.kenzz.crazyapp.widget.RadarView
+        android:layout_marginTop="30dp"
+        android:layout_centerHorizontal="true"
+        android:layout_width="150dp"
+        android:layout_height="150dp"/>
 </RelativeLayout>

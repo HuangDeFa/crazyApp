@@ -143,6 +143,10 @@ public class HttpUtils {
      */
     public void execute(String baseUrl, Map<String, Object> params, HttpCallBack httpCallBack) {
         mBaseUrl = baseUrl;
+        execute(params,httpCallBack);
+    }
+
+    public void execute(Map<String, Object> params, HttpCallBack httpCallBack){
         mParams = params;
         mHttpCallBack = httpCallBack;
         execute();
