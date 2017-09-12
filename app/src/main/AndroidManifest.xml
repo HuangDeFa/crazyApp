@@ -27,6 +27,12 @@
             android:enabled="true"
             android:permission="android.permission.BIND_JOB_SERVICE"
             />
+        <provider
+            android:authorities="com.kenzz.crazyapp.supportprovider"
+            android:name=".database.SupportContentProvider"
+            android:exported="true"
+            android:permission="com.kenzz.SUPPORTPROVIDER"
+            />
     </application>
-
+<permission android:name="com.kenzz.SUPPORTPROVIDER" android:protectionLevel="normal"/>
 </manifest>
