@@ -7,10 +7,11 @@ import java.lang.annotation.Target;
 
 /**
  * Created by huangdefa on 27/08/2017.
- * 数据库注解 列注解
+ * 数据库注解 主键
  */
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface columnField {
+public @interface PrimaryKey {
+    String value();
 }

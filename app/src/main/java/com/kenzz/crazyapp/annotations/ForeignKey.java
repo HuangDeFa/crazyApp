@@ -6,11 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by huangdefa on 27/08/2017.
- * 数据库注解 主键
+ * Created by ken.huang on 9/12/2017.
  */
-
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface primarykey {
+@Target({ElementType.FIELD})
+public @interface ForeignKey {
+
 }
