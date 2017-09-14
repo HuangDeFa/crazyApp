@@ -86,7 +86,7 @@ public class ExplodeView extends View {
         mPaint.setColor(Color.RED);
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeWidth(2);
-        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStyle(Paint.Style.FILL);
 
         mSmallRadius=SMALLRADIUS_MIN;
         mBigRadius=DimensionUtil.dp2px(getContext(),10);
@@ -94,11 +94,11 @@ public class ExplodeView extends View {
         mPath=new Path();
 
         touchSlop= ViewConfiguration.get(getContext()).getScaledTouchSlop();
-        /*mCircleOneX=100;
-        mCircleOneY=100;
-        mCircleTwoX=mCircleOneX+mMaxDistance;
+        mCircleOneX=500;
+        mCircleOneY=300;
+        mCircleTwoX=mCircleOneX-10;//+mMaxDistance;
         mCircleTwoY=mCircleOneY+mMaxDistance;
-        */
+
     }
 
     @Override
@@ -107,7 +107,7 @@ public class ExplodeView extends View {
        // float dis= (float) calcDistance();
         drawCircle(canvas);
         //if(dis<mMaxDistance)
-        drawMetaBall(canvas);
+        drawMetaBall2(canvas);
     }
 
     private int downX,downY;
@@ -173,8 +173,8 @@ public class ExplodeView extends View {
     private void drawMetaBall(Canvas canvas){
 
         //控制点
-        float controlX=(mCircleTwoX-mCircleOneX)/2;
-        float controlY=(mCircleTwoY-mCircleOneY)/2;
+        float controlX=(mCircleTwoX+mCircleOneX)/2;
+        float controlY=(mCircleTwoY+mCircleOneY)/2;
 
         //反切角
         double arcTan=Math.atan((mCircleTwoY-mCircleOneY)/(mCircleTwoX-mCircleOneX));
@@ -195,13 +195,14 @@ public class ExplodeView extends View {
         float y2= (float) (mCircleTwoY-offsetY);
 
         float x4= (float) (mCircleTwoX-offsetX);
-        float y4= (float) (mCircleTwoX+offsetY);
+        float y4= (float) (mCircleTwoY+offsetY);
 
         mPath.reset();
         mPath.moveTo(x1,y1);
         mPath.quadTo(controlX,controlY,x2,y2);
         mPath.lineTo(x4,y4);
         mPath.quadTo(controlX,controlY,x3,y3);
+        mPath.close();
         canvas.drawPath(mPath,mPaint);
     }
 
@@ -230,7 +231,6 @@ public class ExplodeView extends View {
         float startY = mCircleOneY;
         float controlX = (startX + x) / 2;
         float controlY = (startY + y) / 2;
-        int quadrant=getQuadrant();
 
         float distance = (float) Math.sqrt((controlX - startX) * (controlX - startX) + (controlY - startY) * (controlY - startY));
         double a = Math.acos(mSmallRadius / distance);
@@ -246,27 +246,6 @@ public class ExplodeView extends View {
         float offsetY2 = (float) (mSmallRadius * Math.cos(a - c));
         float tanX2 = startX - offsetX2;
         float tanY2 = startY + offsetY2;
-
-       /* switch (quadrant){
-            case QUADRANT_1:
-                tanX1 = startX - offsetX1;
-                tanY1 = startY - offsetY1;
-                break;
-            case QUADRANT_2:
-                tanX1 = startX - offsetX1;
-                tanY1 = startY - offsetY1;
-                break;
-            case QUADRANT_3:
-                tanX1 = startX + offsetX1;
-                tanY1 = startY + offsetY1;
-                break;
-            case QUADRANT_4:
-                tanX1 = startX + offsetX1;
-                tanY1 = startY + offsetY1;
-                break;
-        }*/
-
-
 
         double d = Math.acos((y - controlY) / distance);
         float offsetX3 = (float) (mBigRadius * Math.sin(a - d));
@@ -286,5 +265,22 @@ public class ExplodeView extends View {
         mPath.lineTo(tanX4, tanY4);
         mPath.quadTo(controlX, controlY, tanX2, tanY2);
         canvas.drawPath(mPath, mPaint);
+    }
+
+    private void drawMetaBall3(Canvas canvas){
+        mPath.reset();
+        float distance= (float) Math.sqrt(Math.pow(mCircleOneX-mCircleTwoX,2)+Math.pow(mCircleOneY-mCircleTwoY,2));
+        float sina=(mCircleTwoY-mCircleOneY)/distance;
+        float cosa=(mCircleTwoX-mCircleOneX)/distance;
+        //控制点
+        float controlX=(mCircleTwoX+mCircleOneX)/2;
+        float controlY=(mCircleTwoY+mCircleOneY)/2;
+
+        mPath.moveTo(mCircleOneX-sina*mSmallRadius,mCircleOneY-cosa*mSmallRadius);
+        mPath.lineTo(mCircleOneX+sina*mSmallRadius,mCircleOneY+cosa*mSmallRadius);
+        mPath.quadTo(controlX,controlY,mCircleTwoX+sina*mBigRadius,mCircleTwoY+cosa*mBigRadius);
+        mPath.lineTo(mCircleTwoX-sina*mBigRadius,mCircleTwoY-cosa*mBigRadius);
+        mPath.quadTo(controlX,controlY,mCircleOneX-sina*mSmallRadius,mCircleOneY-cosa*mSmallRadius);
+        canvas.drawPath(mPath,mPaint);
     }
 }
