@@ -30,7 +30,7 @@ public class UiTestActivity extends AppCompatActivity {
         ViewUtils.inject(this);
         initData();
         setView();
-        mSuperViewPager.postDelayed(mRunnable,2000);
+        //mSuperViewPager.postDelayed(mRunnable,2000);
     }
 
     private Runnable mRunnable=new Runnable() {

@@ -8,6 +8,7 @@
     android:clipChildren="false"
     tools:context="com.kenzz.crazyapp.UiTestActivity">
 <com.kenzz.crazyapp.widget.SuperViewPager
+    android:visibility="gone"
     android:layout_marginTop="25dp"
     android:layout_width="match_parent"
     android:layout_height="300dp"
@@ -16,6 +17,10 @@
     android:layout_marginLeft="80dp"
     android:layout_marginRight="80dp"
     >
-
 </com.kenzz.crazyapp.widget.SuperViewPager>
+    <com.kenzz.crazyapp.widget.ExplodeView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
 </RelativeLayout>

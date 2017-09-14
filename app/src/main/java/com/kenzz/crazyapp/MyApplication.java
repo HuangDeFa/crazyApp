@@ -25,7 +25,7 @@ public class MyApplication extends Application {
         super.onCreate();
         mInstance=this;
         ExceptionHelper.getExceptionHelper().init(this);
-        DataBaseSupportFactory.getFactory().getDataBaseSupport().init(this);
+       // DataBaseSupportFactory.getFactory().getDataBaseSupport().init(this);
         SkinManager.getInstance().init(this);
     }
 }
