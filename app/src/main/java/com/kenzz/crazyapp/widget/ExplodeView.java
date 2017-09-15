@@ -1,10 +1,12 @@
 package com.kenzz.crazyapp.widget;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
@@ -12,6 +14,9 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.animation.CycleInterpolator;
+import android.view.animation.OvershootInterpolator;
+import android.view.animation.TranslateAnimation;
 
 import com.kenzz.crazyapp.utils.DimensionUtil;
 
@@ -55,7 +60,7 @@ public class ExplodeView extends View {
     private int mMaxDistance;
 
     private final int SMALLRADIUS_MIN=DimensionUtil.dp2px(getContext(),3);
-    private final int SMALLRADIUS_MAX=DimensionUtil.dp2px(getContext(),7);
+    private final int SMALLRADIUS_MAX=DimensionUtil.dp2px(getContext(),8);
 
     //分别表示1,2,3,4象限
     private final static int QUADRANT_1=1;
@@ -66,6 +71,8 @@ public class ExplodeView extends View {
     private Path mPath;
 
     private int touchSlop;
+
+    private Paint mTextPaint;
 
     public ExplodeView(Context context) {
         this(context,null);
@@ -87,10 +94,19 @@ public class ExplodeView extends View {
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeWidth(2);
         mPaint.setStyle(Paint.Style.FILL);
+        //防抖动
+        mPaint.setDither(true);
 
-        mSmallRadius=SMALLRADIUS_MIN;
+        mTextPaint=new Paint(Paint.ANTI_ALIAS_FLAG);
+        mTextPaint.setDither(true);
+        mTextPaint.setColor(Color.WHITE);
+        mTextPaint.setStyle(Paint.Style.FILL);
+        mTextPaint.setTextAlign(Paint.Align.CENTER);
+        mTextPaint.setTextSize(35);
+
+        mSmallRadius=SMALLRADIUS_MAX;
         mBigRadius=DimensionUtil.dp2px(getContext(),10);
-        mMaxDistance= DimensionUtil.dp2px(getContext(),50f);
+        mMaxDistance= DimensionUtil.dp2px(getContext(),40f);
         mPath=new Path();
 
         touchSlop= ViewConfiguration.get(getContext()).getScaledTouchSlop();
@@ -104,10 +120,13 @@ public class ExplodeView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-       // float dis= (float) calcDistance();
+        float dis= (float) calcDistance();
         drawCircle(canvas);
-        //if(dis<mMaxDistance)
-        drawMetaBall2(canvas);
+        if(mSmallRadius>0) {
+            drawMetaBall(canvas);
+        }
+        //绘制拖拽圆上面的文字
+        drawText(canvas);
     }
 
     private int downX,downY;
@@ -125,6 +144,8 @@ public class ExplodeView extends View {
                 //mPath.moveTo(downX,downY);
                 mCircleOneX=event.getX();
                 mCircleOneY=event.getY();
+                mCircleTwoX=mCircleOneX;
+                mCircleTwoY=mCircleOneY;
                 break;
             case MotionEvent.ACTION_MOVE:
                /* int x= (int) event.getX();
@@ -145,24 +166,67 @@ public class ExplodeView extends View {
                 mCircleTwoY=event.getY();
                 break;
             case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                if(mSmallRadius==0){
+                    //爆炸效果
+
+                }else{
+                    //回弹效果
+                    //startBackAnimation();
+                    shakeAnimation(1);
+                    mCircleTwoX=mCircleOneX;
+                    mCircleTwoY=mCircleOneY;
+                }
                 break;
         }
-        invalidate();
+        postInvalidate();
         return true;
     }
 
+    private void startBackAnimation() {
+        ValueAnimator animator=ValueAnimator.ofFloat(0,1);
+        final float dy=mCircleTwoY-mCircleOneY;
+        final float dx=mCircleTwoX-mCircleOneY;
+        animator.setDuration(200);
+        animator.setInterpolator(new OvershootInterpolator(5.0f));
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mCircleTwoX=mCircleOneX+(1.0f-(Float)animation.getAnimatedValue())*dx;
+                mCircleTwoY=mCircleOneY+(1.0f-(Float)animation.getAnimatedValue())*dy;
+                invalidate();
+            }
+        });
+        animator.start();
+    }
+
+    public void shakeAnimation(int counts) {
+        // 避免动画抖动的频率过大，所以除以2，另外，抖动的方向跟手指滑动的方向要相反
+        TranslateAnimation translateAnimation = new TranslateAnimation((mCircleOneX - mCircleTwoX) / 2, 0, (mCircleOneY - mCircleTwoY) / 2, 0);
+        translateAnimation.setInterpolator(new CycleInterpolator(counts));
+        translateAnimation.setDuration(200);
+        startAnimation(translateAnimation);
+    }
 
     private void drawCircle(Canvas canvas){
+        if(mSmallRadius>0)
         canvas.drawCircle(mCircleOneX,mCircleOneY,mSmallRadius,mPaint);
         canvas.drawCircle(mCircleTwoX,mCircleTwoY,mBigRadius,mPaint);
+    }
+
+    private void drawText(Canvas canvas){
+        Paint.FontMetricsInt fontMetricsInt = mTextPaint.getFontMetricsInt();
+        int baseLineY= (int) (mCircleTwoY+(fontMetricsInt.bottom-fontMetricsInt.top)/2-fontMetricsInt.bottom);
+        canvas.drawText("30",mCircleTwoX,baseLineY,mTextPaint);
     }
 
     private double calcDistance(){
         float dx=mCircleTwoX-mCircleOneX;
         float dy=mCircleTwoY-mCircleOneY;
         double dis = Math.sqrt(dx * dx + dy * dy);
-        if(dis<=mMaxDistance){
-            mSmallRadius= (int) ((dis/mMaxDistance)*(SMALLRADIUS_MAX-SMALLRADIUS_MIN)+SMALLRADIUS_MIN);
+        float ratio= (float) (dis/mMaxDistance);
+        if(ratio<=0.8f){
+            mSmallRadius= (int) ((1- ratio)*SMALLRADIUS_MAX);
         }else {
             mSmallRadius=0;
         }

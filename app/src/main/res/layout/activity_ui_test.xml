@@ -19,8 +19,15 @@
     >
 </com.kenzz.crazyapp.widget.SuperViewPager>
     <com.kenzz.crazyapp.widget.ExplodeView
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
-
+    <com.kenzz.crazyapp.widget.LoadingView
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+     <com.kenzz.crazyapp.widget.FunnyLoadingView
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"/>
 </RelativeLayout>

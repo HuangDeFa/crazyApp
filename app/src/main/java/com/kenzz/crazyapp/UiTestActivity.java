@@ -115,6 +115,8 @@ public class UiTestActivity extends AppCompatActivity {
             tv.setText(i+"页面");
             mCardViews.add(cardView);
         }
+
+        obser
     }
 
 
