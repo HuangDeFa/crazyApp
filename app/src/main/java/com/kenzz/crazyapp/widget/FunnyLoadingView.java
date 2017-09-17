@@ -106,10 +106,13 @@ public class FunnyLoadingView extends View {
                 if (repeatCount == 2) {
                     if (mDrawType == DRAW_TYPE_CIRCLE) {
                         mDrawType = DRAW_TYPE_TRIANGLE;
+                        mShapePaint.setColor(color2);
                     } else if (mDrawType == DRAW_TYPE_TRIANGLE) {
                         mDrawType = DRAW_TYPE_RECTANGLE;
+                        mShapePaint.setColor(color3);
                     } else {
                         mDrawType = DRAW_TYPE_CIRCLE;
+                        mShapePaint.setColor(color1);
                     }
                     repeatCount = 0;
                 }
