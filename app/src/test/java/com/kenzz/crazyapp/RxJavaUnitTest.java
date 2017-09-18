@@ -2,16 +2,10 @@ package com.kenzz.crazyapp;
 
 import org.junit.Test;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,8 +16,10 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.Observer;
 import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
@@ -45,9 +41,26 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
+import retrofit2.http.Field;
+import retrofit2.http.FieldMap;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.HEAD;
+import retrofit2.http.HTTP;
+import retrofit2.http.Header;
+import retrofit2.http.HeaderMap;
+import retrofit2.http.Multipart;
+import retrofit2.http.POST;
+import retrofit2.http.Part;
+import retrofit2.http.PartMap;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
+import retrofit2.http.QueryMap;
+import retrofit2.http.QueryName;
+import retrofit2.http.Url;
 
 /**
  * Created by huangdefa on 16/09/2017.
@@ -69,18 +82,18 @@ public class RxJavaUnitTest {
         //正规套路 需要传递一个ObservableOnSubscribe对象，其中在subscrie的回调方法进行事件流的发射，这就
         //需要ObservableEmitter 发射器进行实现. 发射器可以发出多个onNext实际，但只能发送一个onComplete/onError
         //事件，这两个事件是互斥的
-       Observable<String> observable = Observable.create(new ObservableOnSubscribe<String>() {
+        Observable<String> observable = Observable.create(new ObservableOnSubscribe<String>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<String> emitter) throws Exception {
                 try {
-                    if(!emitter.isDisposed()) {
+                    if (!emitter.isDisposed()) {
                         String[] ss = new String[]{"rxJava", "rxAndroid", "IOS", "Android"};
                         for (String s : ss) {
                             emitter.onNext(s);
                         }
                         emitter.onComplete();
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     emitter.onError(e);
                 }
             }
@@ -278,7 +291,7 @@ public class RxJavaUnitTest {
                 }).subscribe(new Consumer<String>() {
             @Override
             public void accept(String o) throws Exception {
-                System.out.println("flatMap-->"+o);
+                System.out.println("flatMap-->" + o);
             }
         });
         //concatMap Map操作之后返回Observables(observable("ob1"),observable("ob2"),observable("ob3"));
@@ -292,37 +305,37 @@ public class RxJavaUnitTest {
                 }).subscribe(new Consumer<String>() {
             @Override
             public void accept(String o) throws Exception {
-             System.out.println("contactMap-->"+o);
+                System.out.println("contactMap-->" + o);
             }
         });
 
-       //take(count) 表示提取前面count个数据,takeLast(count) 表示提取后面count个数据
-        Observable.fromArray(1,2,3,4,5)
+        //take(count) 表示提取前面count个数据,takeLast(count) 表示提取后面count个数据
+        Observable.fromArray(1, 2, 3, 4, 5)
                 .take(3)
                 .takeLast(2)
                 .observeOn(Schedulers.computation())
                 .subscribe(new Consumer<Integer>() {
                     @Override
                     public void accept(Integer integer) throws Exception {
-                       System.out.println("take-->"+integer);
+                        System.out.println("take-->" + integer);
                     }
                 });
         //range(start,count) 表示发射从start开始的count个数据 ,
         // intervalRange(0,10,500,1000, TimeUnit.SECONDS)-->表示发送从0开始的10个数据
         //延迟500s执行，周期为1000s,单位事s. 相当于一个Timer触发器
-        Observable.range(0,10)
+        Observable.range(0, 10)
                 .filter(new Predicate<Integer>() {
                     @Override
                     public boolean test(@NonNull Integer integer) throws Exception {
-                        return integer>5;
+                        return integer > 5;
                     }
                 })
                 .subscribe(new Consumer<Integer>() {
-            @Override
-            public void accept(Integer integer) throws Exception {
-                System.out.println("range-->"+integer);
-            }
-        });
+                    @Override
+                    public void accept(Integer integer) throws Exception {
+                        System.out.println("range-->" + integer);
+                    }
+                });
         //interval()函数的两个参数：一个指定两次发射的时间间隔，另一个是用到的时间单位。
        /* Observable.interval(200,500,TimeUnit.SECONDS).subscribe(new Consumer<Long>() {
             @Override
@@ -332,43 +345,43 @@ public class RxJavaUnitTest {
         });
         */
 
-       //concat操作符将多个observable连接起来，只要前面一个ob发射完数据，
+        //concat操作符将多个observable连接起来，只要前面一个ob发射完数据，
         // 接着将观察者订阅到第二个接个第二个发射数据如此类推
         // Observable.concat(a,b)==a.concatWith(b)
-        Observable ob1=Observable.just(1,2,3);
-        Observable ob2=Observable.just("a","b","c");
-        Observable.concat(ob1,ob2)
+        Observable ob1 = Observable.just(1, 2, 3);
+        Observable ob2 = Observable.just("a", "b", "c");
+        Observable.concat(ob1, ob2)
                 .subscribe(new Observer() {
-            @Override
-            public void onSubscribe(@NonNull Disposable d) {
-                System.out.println("concat-->onSubscribe");
-            }
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        System.out.println("concat-->onSubscribe");
+                    }
 
-            @Override
-            public void onNext(@NonNull Object o) {
-                System.out.println("concat-->"+o);
-            }
+                    @Override
+                    public void onNext(@NonNull Object o) {
+                        System.out.println("concat-->" + o);
+                    }
 
-            @Override
-            public void onError(@NonNull Throwable e) {
+                    @Override
+                    public void onError(@NonNull Throwable e) {
 
-            }
+                    }
 
-            @Override
-            public void onComplete() {
-                System.out.println("concat-->onComplete");
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        System.out.println("concat-->onComplete");
+                    }
+                });
 
-        Observable.range(1,20).any(new Predicate<Integer>() {
+        Observable.range(1, 20).any(new Predicate<Integer>() {
             @Override
             public boolean test(@NonNull Integer integer) throws Exception {
-                return integer>10;
+                return integer > 10;
             }
         }).subscribe(new Consumer<Boolean>() {
             @Override
             public void accept(Boolean aBoolean) throws Exception {
-                System.out.println("any-->" +aBoolean);
+                System.out.println("any-->" + aBoolean);
             }
         });
 
@@ -378,10 +391,10 @@ public class RxJavaUnitTest {
         worker.schedule(new Runnable() {
             @Override
             public void run() {
-                for(int i=0;i<50;i++){
-                    System.out.println("scheduler_worker-->"+i);
+                for (int i = 0; i < 50; i++) {
+                    System.out.println("scheduler_worker-->" + i);
                 }
-               // worker.dispose();
+                // worker.dispose();
             }
         });
         worker.schedule(new Runnable() {
@@ -391,11 +404,15 @@ public class RxJavaUnitTest {
             }
         });
 
-        Observable.fromIterable(new ArrayList<String>(){{add("Android");add("IOS");add("WindowPhone");}})
+        Observable.fromIterable(new ArrayList<String>() {{
+            add("Android");
+            add("IOS");
+            add("WindowPhone");
+        }})
                 .forEach(new Consumer<String>() {
                     @Override
                     public void accept(String s) throws Exception {
-                       System.out.println(s);
+                        System.out.println(s);
                     }
                 });
 
@@ -403,14 +420,22 @@ public class RxJavaUnitTest {
         Observable.combineLatest(Observable.just(2, 6), Observable.just(5, 6, 7, 8), Observable.just(1, 9), new Function3<Integer, Integer, Integer, String>() {
             @Override
             public String apply(@NonNull Integer integer, @NonNull Integer integer2, @NonNull Integer integer3) throws Exception {
-                return String.format("integer %1s,integer2 %2s,integer3 %3s",integer,integer2,integer3);
+                return String.format("integer %1s,integer2 %2s,integer3 %3s", integer, integer2, integer3);
             }
-        }).subscribe(new Consumer<String>() {
-            @Override
-            public void accept(String integer) throws Exception {
-                System.out.println("combineLatest-->"+integer);
-            }
-        });
+        })
+                .compose(new ObservableTransformer<String, String>() {
+                    @Override
+                    public ObservableSource<String> apply(@NonNull Observable<String> upstream) {
+                        return upstream.subscribeOn(Schedulers.computation())
+                                .observeOn(AndroidSchedulers.mainThread());
+                    }
+                })
+                .subscribe(new Consumer<String>() {
+                    @Override
+                    public void accept(String integer) throws Exception {
+                        System.out.println("combineLatest-->" + integer);
+                    }
+                });
     }
 
     /**
@@ -418,9 +443,9 @@ public class RxJavaUnitTest {
      * 主要类：OkHttpClient,OkHttpClient.Builder -->创建client用于包装发起请求
      * 主要用于设置：拦截器，添加代理，添加证书，连接超时等
      * Request,Request.Builder-->创建一个请求
-     *
+     * <p>
      * 辅助：RequestBody-->FormBody 创建一个表单(键值对)请求体，MultipartBody分块上传可以组合多个请求体
-     *
+     * <p>
      * 主要包装了：url,请求的方法，请求头的信息，携带RequestBody信息(一般是Post请求）例如文件的上传
      * Response,Response.Builder-->创建一个响应
      * 辅助：ResponseBody-->CacheResponse 缓存响应，设置了缓存策略。NetResponse 网络响应，服务器返回的响应
@@ -428,60 +453,60 @@ public class RxJavaUnitTest {
      * ResponseBody 真正的响应内容 包括contentLength,InputStream,byte[]和Reader
      * Interceptor 拦截器：主要作用于整个请求响应过程，拦截这个过程做一下预处理或者添加一下共同的操作。
      * 例如为每个请求添加同样的请求头，或者拦截响应打印一些log信息等~
-     *
+     * <p>
      * call，是发起一个请求的包装器。通过call可以执行同步、异步的HTTP请求。Http请求会导致线程阻塞，所以
      * 真正的操作要放到子线程去，call.execute()同步返回Response。call.enqueue(callBack)异步通过callBack
      * 进行响应回调。如果涉及到UI需要用Handler切换到主线程。
-     *
+     * <p>
      * Cache:缓存，okHttp内置了缓存策略和实现，只要手动打开设置就可以
-     *
-     *
+     * <p>
+     * <p>
      * http://lf.snssdk.com/neihan/service/tabs/?essence=1&iid=3216590132&device_id=32613520945&ac=wifi&channel=360&aid=7&
      * app_name=joke_essay&version_code=612&version_name=6.1.2&device_platform=android&ssmix=a&
      * device_type=sansung&device_brand=xiaomi&os_api=28&os_version=6.10.1&uuid=326135942187625&
      * openudid=3dg6s95rhg2a3dg5&manifest_version_code=612&resolution=1450*2800&dpi=620&update_version_code=6120
      */
     @Test
-    public void okHttpTest(){
-        String url="http://lf.snssdk.com/neihan/service/tabs/?essence=1&iid=3216590132&device_id=32613520945&ac=wifi&channel=360&aid=7" +
+    public void okHttpTest() {
+        String url = "http://lf.snssdk.com/neihan/service/tabs/?essence=1&iid=3216590132&device_id=32613520945&ac=wifi&channel=360&aid=7" +
                 "&app_name=joke_essay&version_code=612&version_name=6.1.2&device_platform=android" +
                 "&ssmix=a&device_type=sansung&device_brand=xiaomi&os_api=28&os_version=6.10.1" +
                 "&uuid=326135942187625&openudid=3dg6s95rhg2a3dg5&manifest_version_code=612&" +
                 "resolution=1450*2800&dpi=620&update_version_code=6120";
-        OkHttpClient.Builder clientBuilder=new OkHttpClient.Builder();
-        Request request=new Request.Builder()
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+        Request request = new Request.Builder()
                 .url(url)
                 .get()
                 .build();
         try {
 
-            clientBuilder.readTimeout(5,TimeUnit.SECONDS);
-            clientBuilder.connectTimeout(5,TimeUnit.SECONDS);
+            clientBuilder.readTimeout(5, TimeUnit.SECONDS);
+            clientBuilder.connectTimeout(5, TimeUnit.SECONDS);
             //设置缓存
             //clientBuilder.cache(null);
             clientBuilder.addNetworkInterceptor(new Interceptor() {
                 @Override
                 public Response intercept(Chain chain) throws IOException {
-                   Response response= chain.proceed(chain.request());
+                    Response response = chain.proceed(chain.request());
                     Response.Builder builder = response.newBuilder();
-                    builder.addHeader("joke_essay","hello world");
+                    builder.addHeader("joke_essay", "hello world");
                     return builder.build();
                 }
             });
 
-          Response response = clientBuilder.build().newCall(request).execute();
-            if(response.code()==200){
+            Response response = clientBuilder.build().newCall(request).execute();
+            if (response.code() == 200) {
                 Headers headers = response.headers();
-                if(headers!=null){
+                if (headers != null) {
                     Map<String, List<String>> stringListMap = headers.toMultimap();
-                    if(stringListMap!=null && stringListMap.size()>0) {
+                    if (stringListMap != null && stringListMap.size() > 0) {
                         Observable.fromIterable(stringListMap.entrySet()).flatMap(new Function<Map.Entry<String, List<String>>, ObservableSource<String>>() {
                             @Override
                             public ObservableSource<String> apply(@NonNull final Map.Entry<String, List<String>> stringListEntry) throws Exception {
                                 return Observable.fromIterable(stringListEntry.getValue()).map(new Function<String, String>() {
                                     @Override
                                     public String apply(@NonNull String s) throws Exception {
-                                        return stringListEntry.getKey()+": "+s;
+                                        return stringListEntry.getKey() + ": " + s;
                                     }
                                 });
                             }
@@ -494,12 +519,12 @@ public class RxJavaUnitTest {
                     }
                 }
                 InputStream inputStream = response.body().byteStream();
-                if(inputStream!=null){
-                    ByteArrayOutputStream bos=new ByteArrayOutputStream();
-                    byte[] temp=new byte[1024*1024];
+                if (inputStream != null) {
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    byte[] temp = new byte[1024 * 1024];
                     int len;
-                    while ((len=inputStream.read(temp))!=-1){
-                        bos.write(temp,0,len);
+                    while ((len = inputStream.read(temp)) != -1) {
+                        bos.write(temp, 0, len);
                     }
                     inputStream.close();
                     System.out.println(bos.toString("utf-8"));
@@ -545,36 +570,94 @@ public class RxJavaUnitTest {
      *
      */
     @Test
-    public void retrofitTest(){
-        Retrofit retrofit=new Retrofit.Builder()
+    public void retrofitTest() {
+        Retrofit retrofit = new Retrofit.Builder()
 
                 .build();
     }
 
-    private Cache provideCache(String path,long size){
-        return new Cache(new File(path),size);
+    private Cache provideCache(String path, long size) {
+        return new Cache(new File(path), size);
     }
 
     /**
-     *  上传
+     * 上传
+     *
      * @param url
      * @param params
      */
-    private void doPost(String url,Map<String,String> params){
-        RequestBody requestBody= new FormBody.Builder()
-                .add("userName","WongNima")
-                .add("gender","sez")
+    private void doPost(String url, Map<String, String> params) {
+        RequestBody requestBody = new FormBody.Builder()
+                .add("userName", "WongNima")
+                .add("gender", "sez")
                 .build();
 
-        RequestBody body=new MultipartBody.Builder()
-                .addPart(Headers.of("Content-Disposition","form-data;name=\"title\""),RequestBody.create(null,"hello world"))
-                .addPart(Headers.of("Content-Disposition","form-data;name=\"title\""),RequestBody.create(MediaType.parse("image/png"),new File("aaa.png")))
+        RequestBody body = new MultipartBody.Builder()
+                .addPart(Headers.of("Content-Disposition", "form-data;name=\"title\""), RequestBody.create(null, "hello world"))
+                .addPart(Headers.of("Content-Disposition", "form-data;name=\"title\""), RequestBody.create(MediaType.parse("image/png"), new File("aaa.png")))
                 .build();
     }
 
-    private interface TestRetrofitService{
+    private interface TestRetrofitService {
+        //传入完整的URL
         @GET()
-        Observable<?> getRepo();
+        Observable<?> getRepo(@Url String url);
+
+        //@GET()可以传入相对路径 或者全路径获取不传
+        //@Path() 替换在GET对应的占位符
+        @GET("/user/{name}")
+        Call<?> getRepoByName(@Path(value = "name", encoded = true) String name);
+
+        //传入完整的URL
+        @GET("{FullUrl}")
+        Call<?> getRepoDefaul(@Path(value = "FullUrl", encoded = false) String fullUrl);
+
+        //@Query 传入查询参数 可以是一个字符串、一个字符串数组
+        // url=BaseURl/repo?userName=userName
+        @GET("/repo")
+        Call<?> queryRepo(@Query("userName") String userName);
+
+        //@Query 传入查询参数 可以是一个字符串、一个字符串数组
+        // url=BaseURl/repo?userName=userName&userName=userName2&userName=userName3...
+        @GET("/repo")
+        Call<?> queryRepos(@Query("userName") String... userNames);
+
+        //@QueryMap 将查询参数放进一个map
+        //url=BaseUrl/repo?key1=value1&key2=value2...
+        @GET("/repo")
+        Call<?> queryRepos(@QueryMap(encoded = false) Map<String, String> queryMap);
+
+        //queryReposByNames("contains(ww)","age(23)"）
+        //url=BaseUrl/repo?contains(ww)&&age(23)
+        @GET("/repo")
+        Call<?> queryReposByNames(@HeaderMap Map<String, String> headerMap
+                , @QueryName(encoded = true) String... queryNames);
+
+
+        //header信息的添加 @Header 作用于参数单个添加。@Headers直接作用于方法一次性添加多个.@HeaderMap作用于参数
+        //而且添加的header即使key一样也不会覆盖
+        @POST("/post")
+        @FormUrlEncoded
+        Call<?> postRepos(@Header("Agent-language") String language, @Field("userName") String... userName);
+
+
+        @retrofit2.http.Headers({
+                "Cache-Control: max-age=640000",
+                "header-a: wangnima"
+        })
+        @FormUrlEncoded
+        @POST("/post")
+        Call<?> postRepos(@FieldMap Map<String, String> userNameMap);
+
+
+        //文件上传
+        @POST("/post/file")
+        Call<?> postFile(@Part("description") String description, @Part("image") RequestBody requestBody);
+
+        //多文件上传
+        @Multipart
+        @POST("/post/files")
+        Call<?> postFiles(@Part("file") RequestBody file, @PartMap Map<String, RequestBody> requestBodyMap);
     }
 }
 
