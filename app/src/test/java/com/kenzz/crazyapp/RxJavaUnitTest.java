@@ -2,7 +2,19 @@ package com.kenzz.crazyapp;
 
 import org.junit.Test;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +35,16 @@ import io.reactivex.subjects.AsyncSubject;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.ReplaySubject;
+import okhttp3.Cache;
+import okhttp3.FormBody;
+import okhttp3.Headers;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
@@ -391,10 +413,162 @@ public class RxJavaUnitTest {
         });
     }
 
+    /**
+     * OkHttp 是一个Http client客户端
+     * 主要类：OkHttpClient,OkHttpClient.Builder -->创建client用于包装发起请求
+     * 主要用于设置：拦截器，添加代理，添加证书，连接超时等
+     * Request,Request.Builder-->创建一个请求
+     *
+     * 辅助：RequestBody-->FormBody 创建一个表单(键值对)请求体，MultipartBody分块上传可以组合多个请求体
+     *
+     * 主要包装了：url,请求的方法，请求头的信息，携带RequestBody信息(一般是Post请求）例如文件的上传
+     * Response,Response.Builder-->创建一个响应
+     * 辅助：ResponseBody-->CacheResponse 缓存响应，设置了缓存策略。NetResponse 网络响应，服务器返回的响应
+     * 主要包装了响应信息：message,状态码code,还有一系列ResponseBody
+     * ResponseBody 真正的响应内容 包括contentLength,InputStream,byte[]和Reader
+     * Interceptor 拦截器：主要作用于整个请求响应过程，拦截这个过程做一下预处理或者添加一下共同的操作。
+     * 例如为每个请求添加同样的请求头，或者拦截响应打印一些log信息等~
+     *
+     * call，是发起一个请求的包装器。通过call可以执行同步、异步的HTTP请求。Http请求会导致线程阻塞，所以
+     * 真正的操作要放到子线程去，call.execute()同步返回Response。call.enqueue(callBack)异步通过callBack
+     * 进行响应回调。如果涉及到UI需要用Handler切换到主线程。
+     *
+     * Cache:缓存，okHttp内置了缓存策略和实现，只要手动打开设置就可以
+     *
+     *
+     * http://lf.snssdk.com/neihan/service/tabs/?essence=1&iid=3216590132&device_id=32613520945&ac=wifi&channel=360&aid=7&
+     * app_name=joke_essay&version_code=612&version_name=6.1.2&device_platform=android&ssmix=a&
+     * device_type=sansung&device_brand=xiaomi&os_api=28&os_version=6.10.1&uuid=326135942187625&
+     * openudid=3dg6s95rhg2a3dg5&manifest_version_code=612&resolution=1450*2800&dpi=620&update_version_code=6120
+     */
     @Test
     public void okHttpTest(){
+        String url="http://lf.snssdk.com/neihan/service/tabs/?essence=1&iid=3216590132&device_id=32613520945&ac=wifi&channel=360&aid=7" +
+                "&app_name=joke_essay&version_code=612&version_name=6.1.2&device_platform=android" +
+                "&ssmix=a&device_type=sansung&device_brand=xiaomi&os_api=28&os_version=6.10.1" +
+                "&uuid=326135942187625&openudid=3dg6s95rhg2a3dg5&manifest_version_code=612&" +
+                "resolution=1450*2800&dpi=620&update_version_code=6120";
+        OkHttpClient.Builder clientBuilder=new OkHttpClient.Builder();
+        Request request=new Request.Builder()
+                .url(url)
+                .get()
+                .build();
+        try {
+
+            clientBuilder.readTimeout(5,TimeUnit.SECONDS);
+            clientBuilder.connectTimeout(5,TimeUnit.SECONDS);
+            //设置缓存
+            //clientBuilder.cache(null);
+            clientBuilder.addNetworkInterceptor(new Interceptor() {
+                @Override
+                public Response intercept(Chain chain) throws IOException {
+                   Response response= chain.proceed(chain.request());
+                    Response.Builder builder = response.newBuilder();
+                    builder.addHeader("joke_essay","hello world");
+                    return builder.build();
+                }
+            });
+
+          Response response = clientBuilder.build().newCall(request).execute();
+            if(response.code()==200){
+                Headers headers = response.headers();
+                if(headers!=null){
+                    Map<String, List<String>> stringListMap = headers.toMultimap();
+                    if(stringListMap!=null && stringListMap.size()>0) {
+                        Observable.fromIterable(stringListMap.entrySet()).flatMap(new Function<Map.Entry<String, List<String>>, ObservableSource<String>>() {
+                            @Override
+                            public ObservableSource<String> apply(@NonNull final Map.Entry<String, List<String>> stringListEntry) throws Exception {
+                                return Observable.fromIterable(stringListEntry.getValue()).map(new Function<String, String>() {
+                                    @Override
+                                    public String apply(@NonNull String s) throws Exception {
+                                        return stringListEntry.getKey()+": "+s;
+                                    }
+                                });
+                            }
+                        }).subscribe(new Consumer<String>() {
+                            @Override
+                            public void accept(String s) throws Exception {
+                                System.out.println(s);
+                            }
+                        });
+                    }
+                }
+                InputStream inputStream = response.body().byteStream();
+                if(inputStream!=null){
+                    ByteArrayOutputStream bos=new ByteArrayOutputStream();
+                    byte[] temp=new byte[1024*1024];
+                    int len;
+                    while ((len=inputStream.read(temp))!=-1){
+                        bos.write(temp,0,len);
+                    }
+                    inputStream.close();
+                    System.out.println(bos.toString("utf-8"));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        /* 采用内置的HttpUrlConnection 进行网络请求的套路
+        HttpURLConnection urlConnection=null;
+        try {
+            URL con=new URL(url);
+            urlConnection= (HttpURLConnection) con.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.setConnectTimeout(10000);
+            urlConnection.setReadTimeout(10000);
+            urlConnection.connect();
+            int responseCode = urlConnection.getResponseCode();
+            if(responseCode==200){
+                InputStream inputStream = urlConnection.getInputStream();
+                BufferedInputStream bis=new BufferedInputStream(inputStream);
+                byte[] temp=new byte[1024*1024];
+                int len = bis.read(temp, 0, temp.length);
+                while (len!=-1){
+                   len = bis.read(temp, 0, temp.length);
+                }
+            }
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if(urlConnection!=null){
+                urlConnection.disconnect();
+            }
+        }
+        */
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void retrofitTest(){
         Retrofit retrofit=new Retrofit.Builder()
-                .addConverterFactory(GsonConverterFactory.create())
+
+                .build();
+    }
+
+    private Cache provideCache(String path,long size){
+        return new Cache(new File(path),size);
+    }
+
+    /**
+     *  上传
+     * @param url
+     * @param params
+     */
+    private void doPost(String url,Map<String,String> params){
+        RequestBody requestBody= new FormBody.Builder()
+                .add("userName","WongNima")
+                .add("gender","sez")
+                .build();
+
+        RequestBody body=new MultipartBody.Builder()
+                .addPart(Headers.of("Content-Disposition","form-data;name=\"title\""),RequestBody.create(null,"hello world"))
+                .addPart(Headers.of("Content-Disposition","form-data;name=\"title\""),RequestBody.create(MediaType.parse("image/png"),new File("aaa.png")))
                 .build();
     }
 
